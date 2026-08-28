@@ -113,7 +113,10 @@
             case "searchPlate": {
                 const p = normalizePlate(payload.plate);
                 // demo：固定車牌 ABC1234 有資料
-                const reports = p === "ABC1234" ? state.demoReports : [];
+                const reports = (p === "ABC1234" ? state.demoReports : []).map((r) => ({
+                    ...r,
+                    my_vote: r._myVote || 0,
+                }));
                 return { ok: true, plate: p, reports };
             }
             case "sendOtp":
@@ -249,7 +252,12 @@
         }
         app.innerHTML = `<div class="loading">查詢中…</div>`;
         try {
-            const data = await callApi("searchPlate", { plate: norm });
+            const searchPayload = { plate: norm };
+            if (session.isLoggedIn) {
+                searchPayload.email = session.email;
+                searchPayload.session_token = session.token;
+            }
+            const data = await callApi("searchPlate", searchPayload);
             if (!data.ok) throw new Error(data.error || "查詢失敗");
             const reports = data.reports || [];
             const anon = reports.filter((r) => r.type === "anonymous");
@@ -322,12 +330,13 @@
             repBadge = `<span class="rep-badge ${total === 0 ? "" : good ? "good" : "bad"}">${label}</span>`;
         }
 
-        // 投票區（登入才顯示）
+        // 投票區（登入才顯示；my_vote 高亮自己投的票）
+        const myVote = Number(r.my_vote || 0);
         const voteBox = session.isLoggedIn
             ? `
             <div class="vote-box">
-                <button class="vote-btn up" data-id="${esc(r.id)}" data-vote="1">👍 ${r.votes_up || 0}</button>
-                <button class="vote-btn down" data-id="${esc(r.id)}" data-vote="-1">👎 ${r.votes_down || 0}</button>
+                <button class="vote-btn up ${myVote === 1 ? "active" : ""}" data-id="${esc(r.id)}" data-vote="1">👍 ${r.votes_up || 0}</button>
+                <button class="vote-btn down ${myVote === -1 ? "active" : ""}" data-id="${esc(r.id)}" data-vote="-1">👎 ${r.votes_down || 0}</button>
             </div>`
             : `<div class="vote-box vote-locked">👍 ${r.votes_up || 0} · 👎 ${r.votes_down || 0}（登入後可投票）</div>`;
 

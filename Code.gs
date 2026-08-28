@@ -129,6 +129,21 @@ function searchPlate(payload) {
         else if (Number(v.vote) === -1) voteMap[v.report_id].down++;
     });
 
+    // 若帶 session，計算目前使用者的投票狀態
+    let myHash = null;
+    if (payload.email && payload.session_token) {
+        myHash = validateSession(
+            String(payload.email).trim().toLowerCase(),
+            payload.session_token
+        );
+    }
+    const myVoteMap = {}; // report_id -> 1 | -1
+    if (myHash) {
+        voteRows.forEach((v) => {
+            if (v.voter_hash === myHash) myVoteMap[v.report_id] = Number(v.vote);
+        });
+    }
+
     // 彙整發布者信譽：該 submitter_hash 所有 active 檢舉獲得的總讚/倒讚
     const repMap = {}; // submitter_hash -> {up, down}
     rows.forEach((r) => {
@@ -154,6 +169,7 @@ function searchPlate(payload) {
                 submitted_at: r.submitted_at ? String(r.submitted_at) : "",
                 votes_up: v.up,
                 votes_down: v.down,
+                my_vote: myVoteMap[r.id] || 0,
                 // 僅記名檢舉回傳信譽（匿名無意義）
                 author_up: r.type === "verified" ? rep.up : null,
                 author_down: r.type === "verified" ? rep.down : null,

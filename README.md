@@ -7,7 +7,7 @@
 ## 🤖 接手 Prompt（複製給 AI 助手即可快速接手）
 
 ```
-專案路徑：D:\X1C_D\Desktop\Script\AI\Taxi_Refusal_Reporting_Platform
+專案路徑：（填入你本機的專案資料夾路徑）
 請先讀取 README.md 與 計程車檢舉平台_專案規格書.md。
 
 這是一個「查詢制」計程車檢舉平台 MVP，已完成：
@@ -55,7 +55,7 @@ Taxi_Refusal_Reporting_Platform/
 
 # 方式二：Python 起本地伺服器（miniforge 環境）
 conda activate tmp_env
-cd D:\X1C_D\Desktop\Script\AI\Taxi_Refusal_Reporting_Platform
+cd 你的專案資料夾路徑
 python -m http.server 8080
 # 瀏覽器開 http://localhost:8080
 ```
@@ -100,36 +100,89 @@ Apps Script 編輯器左側「觸發條件（鬧鐘圖示）」→ 新增觸發�
 
 **GitHub Pages：**
 ```powershell
-cd D:\X1C_D\Desktop\Script\AI\Taxi_Refusal_Reporting_Platform
+cd D:\XXX\Taxi_Refusal_Reporting_Platform
 git init
 git add index.html app.js style.css config.js README.md Code.gs
 git commit -m "init: taxi report platform MVP"
 git remote add origin https://github.com/你的帳號/你的repo.git
-git branch -M main   # 若分支是 master，改名為 main
+git branch -M main
 git push -u origin main
-# 到 repo Settings → Pages → Branch 選 main → Save
-# 完成後網址：https://a3ipak.github.io/trrp/
 ```
 
-**或 Vercel（更快）：**
-```powershell
-npm i -g vercel
-cd D:\X1C_D\Desktop\Script\AI\Taxi_Refusal_Reporting_Platform
-vercel --prod
-```
+**開啟 GitHub Pages（取得網址）：**
+
+1. 瀏覽器打開你的 repo：`https://github.com/a3ipak/trrp`
+2. 上方 tab 列點 **Settings**（設定）
+3. 左側選單最下方點 **Pages**（頁面）
+4. 「Build and deployment」區塊 → **Branch** 下拉選單選 `main`，資料夾選 `/ (root)`，按 **Save**
+5. 等約 1–3 分鐘，重新整理該頁面，上方會出現綠色框顯示網址：
+  **https://a3ipak.github.io/trrp/**
+6. 用手機或電腦瀏覽器打開這個網址，就是你的網站了
+
+> 之後每次 `git push`，GitHub 會自動重新部署（約 1 分鐘生效）。
+> 若顯示 404：確認 Step 4 有按 Save、等幾分鐘、檢查 repo 是 public（private repo 的 Pages 需付費方案）。
+
 
 ### Step 5：接上後端
 
-部署完前端後，把 Apps Script 的 Web App URL 填入 `config.js`：
+用編輯器（VS Code）打開**本專案資料夾裡的 `config.js`**（跟 `index.html` 同一層的那個檔案），找到第 4 行：
 
 ```js
+// 修改前（API_URL 是空字串 = demo 模式）
 const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/XXXX/exec",
-    // ...
-};
+    API_URL: "",
+
+// 修改後（貼上你在 Step 2 部署完成時複製的 Web App URL）
+const CONFIG = {
+    API_URL: "https://script.google.com/macros/s/AKfycb...你的ID.../exec",
 ```
 
-重新部署前端即完成。**注意：Apps Script 部署後若改程式碼，需「部署 → 管理部署作業 → 編輯 → 新版本」才會生效。**
+> 那組 URL 在哪？回到 [script.google.com](https://script.google.com) 你的專案 → 右上「部署 → 管理部署作業」→ 每個部署旁有一個網址（`https://script.google.com/macros/s/.../exec`），點旁邊的複製圖示即可。
+
+改完存檔後，把更新推上 GitHub（前端才會重新部署）：
+
+```powershell
+git add config.js
+git commit -m "feat: connect to Apps Script backend"
+git push
+```
+
+**注意：Apps Script 部署後若改程式碼，需「部署 → 管理部署作業 → 編輯 → 新版本」才會生效。**
+
+## 🔄 日常更新如何部署
+
+改完程式碼後，依你改了什麼決定要部署哪邊：
+
+### 情況 A：只改了前端（`index.html` / `app.js` / `style.css` / `config.js`）
+
+```powershell
+cd D:\XXX\Taxi_Refusal_Reporting_Platform
+git add .
+git commit -m "描述你改了什麼"
+git push
+```
+
+push 後 GitHub Pages 約 1 分鐘自動重新部署。瀏覽器記得 **Ctrl+F5** 強制刷新（避免吃到快取的舊 JS）。
+
+### 情況 B：只改了後端（`Code.gs`）
+
+1. 打開 [script.google.com](https://script.google.com) 你的專案
+2. 把本地 `Code.gs` 的最新內容**整份複製貼上**覆蓋編輯器（記得 `SPREADSHEET_ID` 保持你的真實 ID）
+3. 右上 **部署 → 管理部署作業**（Manage deployments）
+4. 點右上的**鉛筆圖示（編輯）**
+5. 「版本」下拉 → 選 **新增版本**（New version），描述隨意
+6. 按 **部署**
+
+> ⚠️ 只按編輯器裡的「儲存」**不會**更新線上版本——Web App 永遠跑「部署時的版本」，一定要走上面的「新版本」流程。
+
+### 情況 C：前後端都改了
+
+先做 B（後端新版本），再做 A（push 前端），順序不影響結果。
+
+### 驗證更新有沒有生效
+
+- 後端：瀏覽器直接開 `你的_API_URL?action=test`（GET），看回傳的版本資訊；或到 Apps Script 專案 →「執行記錄」看有沒有新請求進來
+- 前端：網站上 Ctrl+F5，F12 → Network 分頁確認載入的 `app.js` 是新的
 
 ## ⚠️ 已知限制
 

@@ -434,6 +434,18 @@ main {
     background: #e6f4ea;
 }
 
+.vote-btn.up.active {
+    border-color: var(--verified);
+    background: #e6f4ea;
+    font-weight: 700;
+}
+
+.vote-btn.down.active {
+    border-color: var(--danger);
+    background: #fce8e6;
+    font-weight: 700;
+}
+
 .vote-btn.down:hover {
     border-color: var(--danger);
     background: #fce8e6;
