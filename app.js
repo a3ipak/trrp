@@ -532,8 +532,8 @@
                 </div>
 
                 <div class="field">
-                    <label>文字描述 *（限 ${CONFIG.MAX_DESC_LENGTH} 字）</label>
-                    <textarea id="r-desc" maxlength="${CONFIG.MAX_DESC_LENGTH}" placeholder="客觀描述事發經過，避免人身攻擊字眼"></textarea>
+                    <label>文字描述（選填，限 ${CONFIG.MAX_DESC_LENGTH} 字）</label>
+                    <textarea id="r-desc" maxlength="${CONFIG.MAX_DESC_LENGTH}" placeholder="選填：補充說明事發經過，避免人身攻擊字眼"></textarea>
                     <div class="char-count"><span id="char-count">0</span> / ${CONFIG.MAX_DESC_LENGTH}</div>
                 </div>
 
@@ -631,7 +631,7 @@
             const location = document.getElementById("r-location").value.trim();
 
             if (!plate) return showMsg("請輸入車牌號碼", "error");
-            if (!description) return showMsg("請填寫文字描述", "error");
+            if (!category) return showMsg("請選擇檢舉分類", "error");
             if (state.report.mode === "verified" && !state.report.otpToken) {
                 return showMsg("記名模式需先完成 Email 驗證", "error");
             }

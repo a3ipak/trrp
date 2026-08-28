@@ -184,10 +184,7 @@ function searchPlate(payload) {
 function submitAnonymousReport(payload) {
     const plate = normalizePlate(payload.plate);
     if (!plate) return { ok: false, error: "車牌不可為空" };
-    if (!payload.description || !payload.description.trim()) {
-        return { ok: false, error: "描述不可為空" };
-    }
-    if (payload.description.length > 300) {
+    if (payload.description && payload.description.length > 300) {
         return { ok: false, error: "描述超過 300 字" };
     }
 
@@ -278,10 +275,7 @@ function submitVerifiedReport(payload) {
     const email = String(payload.email || "").trim().toLowerCase();
     const plate = normalizePlate(payload.plate);
     if (!plate) return { ok: false, error: "車牌不可為空" };
-    if (!payload.description || !payload.description.trim()) {
-        return { ok: false, error: "描述不可為空" };
-    }
-    if (payload.description.length > 300) {
+    if (payload.description && payload.description.length > 300) {
         return { ok: false, error: "描述超過 300 字" };
     }
 
@@ -453,7 +447,7 @@ function appendReport(payload, plate, type, submitterHash) {
         payload.plate_display || payload.plate,
         type,
         payload.category || "其他",
-        payload.description.trim(),
+        (payload.description || "").trim(),
         payload.occurred_at || "",
         payload.location || "",
         new Date(),
