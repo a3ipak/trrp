@@ -113,15 +113,51 @@ function sheetToObjects(sheet) {
     });
 }
 
+// ====== 快取（CacheService）======
+const CACHE_TTL_SECONDS = 300; // 5 分鐘
+
+// 讀 Reports（優先走快取）
+function getReportsCached() {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get("reports_all");
+    if (cached) return JSON.parse(cached);
+    const rows = sheetToObjects(getSheet("Reports"));
+    try {
+        cache.put("reports_all", JSON.stringify(rows), CACHE_TTL_SECONDS);
+    } catch (e) {
+        // 超過 100KB 上限時不快取，直接回傳（資料量大時可改分片）
+    }
+    return rows;
+}
+
+// 讀 Votes（優先走快取）
+function getVotesCached() {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get("votes_all");
+    if (cached) return JSON.parse(cached);
+    const rows = sheetToObjects(getSheet("Votes"));
+    try {
+        cache.put("votes_all", JSON.stringify(rows), CACHE_TTL_SECONDS);
+    } catch (e) {
+        // 同上
+    }
+    return rows;
+}
+
+// 任何寫入 Reports / Votes 後呼叫，確保查詢即時看到新資料
+function invalidateCache() {
+    CacheService.getScriptCache().removeAll(["reports_all", "votes_all"]);
+}
+
 // ====== API: 查詢車牌 ======
 function searchPlate(payload) {
     const plate = normalizePlate(payload.plate);
     if (!plate) return { ok: false, error: "車牌不可為空" };
 
-    const rows = sheetToObjects(getSheet("Reports"));
+    const rows = getReportsCached();
 
     // 彙整投票資料
-    const voteRows = sheetToObjects(getSheet("Votes"));
+    const voteRows = getVotesCached();
     const voteMap = {}; // report_id -> {up, down}
     voteRows.forEach((v) => {
         if (!voteMap[v.report_id]) voteMap[v.report_id] = { up: 0, down: 0 };
@@ -194,6 +230,7 @@ function submitAnonymousReport(payload) {
     }
 
     appendReport(payload, plate, "anonymous", submitterHash);
+    invalidateCache();
     return { ok: true, id: genId() };
 }
 
@@ -302,6 +339,7 @@ function submitVerifiedReport(payload) {
     }
 
     appendReport(payload, plate, "verified", submitterHash);
+    invalidateCache();
 
     // 一次性作廢提交 token：清空 otp_code（session_token 保留，登入態不受影響）
     const verSheet = getSheet("EmailVerifications");
@@ -383,6 +421,7 @@ function voteReport(payload) {
     } else {
         sheet.appendRow([payload.report_id, submitterHash, vote, new Date()]);
     }
+    invalidateCache();
     return { ok: true };
 }
 
@@ -434,6 +473,7 @@ function editReport(payload) {
     if (payload.description && payload.description.trim()) {
         sheet.getRange(index + 2, 6).setValue(payload.description.trim());
     }
+    invalidateCache();
     return { ok: true };
 }
 

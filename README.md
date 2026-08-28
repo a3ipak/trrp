@@ -45,11 +45,6 @@ python -m http.server 8080
 └── Code.gs         # Apps Script 後端（8 個 API action）
 ```
 
-## 📖 文件
-
-- [DEPLOY.md](DEPLOY.md) — 完整部署與維護指南（Sheets / Apps Script / GitHub Pages）
-- [計程車檢舉平台_專案規格書.md](計程車檢舉平台_專案規格書.md) — 原始規格書
-
 ## 🗺 Roadmap
 
 - [x] Phase 1（MVP）：車牌查詢、匿名/記名檢舉、OTP 驗證、頻率限制
