@@ -280,6 +280,7 @@
             app.innerHTML = `
                 <a href="#/" class="back-link">← 返回首頁</a>
                 <div class="result-plate">${esc(plate)}</div>
+                <a href="#/report" class="btn btn-primary btn-block" data-plate="${esc(norm)}">填寫檢舉</a>
                 <div class="stats-row">
                     <div class="stat-card anon">
                         <div class="num">${anon.length}</div>
@@ -294,8 +295,6 @@
                 <div id="list-verified">${verified.map(renderReportCard).join("") || '<p class="empty-state" style="padding:16px">無紀錄</p>'}</div>
                 <div class="section-title">🔓 匿名檢舉 <span class="badge-anon">未驗證</span></div>
                 <div id="list-anon">${anon.map(renderReportCard).join("") || '<p class="empty-state" style="padding:16px">無紀錄</p>'}</div>
-                <br>
-                <a href="#/report" class="btn btn-primary btn-block" data-plate="${esc(norm)}">填寫檢舉</a>
             `;
             bindPlateLinks();
         } catch (err) {
